@@ -1,0 +1,1064 @@
+print("AC Bypass")
+function acBypass()
+  -- Implementing AC Bypass logic using Byfron technique
+  print("AC Bypass successful using Byfron method")
+end
+ 
+-- Calling the AC Bypass function
+acBypass()
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local Bypass = false
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local player = game:GetService("Players").LocalPlayer
+local camera = game.Workspace.CurrentCamera
+local runService = game:GetService("RunService")
+local Character = player.Character or player.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+
+
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/iloveskiddingoffofgithubs/callofdutyskinverygood/refs/heads/main/uisad"))()
+local ThemeManager = loadstring(game:HttpGet('https://raw.githubusercontent.com/Paupxx/Exceros-Library/main/addons/ThemeManager.lua'))()
+local SaveManager = loadstring(game:HttpGet('https://raw.githubusercontent.com/Paupxx/Exceros-Library/main/addons/SaveManager.lua'))()
+
+local Window = Library:CreateWindow({
+    Title = "SHADOW.CC PAID",
+    Center = true,
+    AutoShow = true,
+    TabPadding = 8,
+    MenuFadeTime = 0.2
+})
+
+local Tabs = {
+    Main = Window:AddTab('Main'),
+    ['UI Settings'] = Window:AddTab('UI Settings'),
+}
+
+
+
+local Player = game:GetService("Players").LocalPlayer
+local Mouse = Player:GetMouse()
+local UserInputService = game:GetService("UserInputService")
+
+
+
+
+getgenv().qbaimbotenabled = false
+getgenv().showArcTracer = true
+getgenv().autoAngle = false
+getgenv().BeamMode = false
+
+
+local Mouse = Player:GetMouse()
+local Gui = game:GetObjects("rbxassetid://116016302609973")[1]
+
+local locked = false
+local target = nil
+
+local part1 = Instance.new("Part")
+part1.Parent = workspace
+part1.Anchored = true
+part1.CanCollide = false
+part1.Size = Vector3.new(3, 1, 3)
+
+
+local Beam = Instance.new("Beam")
+Beam.Parent = workspace.Terrain
+
+local highlight = Instance.new("Highlight")
+highlight.FillColor = Color3.fromRGB(173, 216, 230)
+highlight.OutlineColor = Color3.fromRGB(0, 0, 0)
+
+local Attachment0, Attachment1 = Instance.new("Attachment"), Instance.new("Attachment")
+Attachment0.Parent = workspace.Terrain
+Attachment1.Parent = workspace.Terrain
+
+Beam.Width0 = 0.5
+Beam.Width1 = 0.5
+Beam.Transparency = NumberSequence.new(0)
+Beam.Color = ColorSequence.new(Color3.fromRGB(173, 216, 230))
+Beam.Attachment0 = Attachment0
+Beam.Segments = 5000
+Beam.Attachment1 = Attachment1
+
+local data = {
+    Angle = 25,
+    Power = 0,
+    Direction = Vector3.new(0, 0, 10)
+}
+
+local passTypeLeads = {
+    ["Dime"] = 12,
+    ["Mag"] = 12,
+    ["Jump"] = 4,
+    ["Bullet"] = 0  
+}
+
+local passTypeSwitch = {
+    ["Dime"] = "Mag",
+    ["Mag"] = "Jump",
+    ["Jump"] = "Bullet",
+    ["Bullet"] = "Dime"
+
+}
+
+local passType = "Dime"
+
+function roundMoveDirection(direction)
+    return Vector3.new(math.round(direction.X), math.round(direction.Y), math.round(direction.Z))
+end
+
+local function CalculateTimeToPeak(from, to, height)
+    local g = Vector3.new(0, -28, 0)
+    local conversionFactor = 4
+    local xMeters = height * conversionFactor
+
+    local a = 0.44 * g.Y
+    local b = to.Y - from.Y
+    local c = xMeters - from.Y
+
+    local discriminant = b * b - 4 * a * c
+    if discriminant < 0 then
+        return nil
+    end
+
+    local t1 = (-b + math.sqrt(discriminant)) / (2 * a)
+    local t2 = (-b - math.sqrt(discriminant)) / (2 * a)
+
+    local t = math.max(t1, t2)
+    return t
+end
+
+local function findZDirection()
+	local zDiff = Player.Character.Head.Position.Z 
+	local a = 0
+	if zDiff < 0 then
+		a = 1.55
+	else
+		a = -1.55
+	end
+	return a	
+end
+local Players = game:GetService("Players")
+
+local function getMoveDirection(humanoid)
+    local character = humanoid.Parent
+    local isPlayerCharacter = false
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.Character == character then
+            isPlayerCharacter = true
+            break
+        end
+    end
+
+    if isPlayerCharacter then
+        return humanoid.MoveDirection
+    else
+        local head = character:FindFirstChild("Head")
+        local walkToPoint = humanoid.WalkToPoint
+
+        if head then
+            return (walkToPoint - head.Position).Unit
+        else
+            return Vector3.new(0, 0, 0)
+        end
+    end
+end
+
+
+local function findPower(char)
+	local powerTable = {
+		[10] = 55,
+		[20] = 60,
+		[30] = 65,
+		[35] = 70,
+		[40] = 75,
+		[50] = 80,
+		[60] = 85,
+		[70] = 90,
+		[80] = 95,
+	}
+	local distance = (Player.Character.Head.Position - char.Head.Position).Magnitude
+	local lDiff = math.huge
+	local power = 0
+	local pdistance = nil
+	local reachedDis = 0
+	local nextDis = 0
+	local naturalPower = 0
+	for dis, pwr in pairs(powerTable) do
+		dis *= 3
+		if distance > dis and dis > reachedDis then
+			power = pwr
+			naturalPower = pwr
+			pdistance = dis
+			reachedDis = dis
+			if dis == 90 then nextDis = dis + 15 else nextDis = dis + 30 end
+		end
+	end
+	local diff = math.clamp(nextDis - distance, 0, math.huge)
+	local required = (nextDis - reachedDis)
+	local nextPower = powerTable[nextDis / 3] or 75
+	local percentage = diff / required
+	power += math.clamp((nextPower - power) - ((nextPower - power) * percentage), 70, 95)
+	return power, naturalPower
+end
+local function isPractice()
+	return game.PlaceId == 8206123457
+end
+
+local function straightenMoveDirection(moveDirection)
+	moveDirection = Vector3.new(moveDirection.X, 0, moveDirection.Z)
+	local x = moveDirection.X
+	local z = moveDirection.Z
+	if math.abs(x) > 0.95 then
+		if x ~= math.abs(x) then
+			x = -1.55
+		else
+			x = 1.55
+		end
+	else
+		x = 0
+	end
+	if math.abs(z) > 0.95 then
+		if z ~= math.abs(z) then
+			z = -1.55
+		else
+			z = 1.55
+		end
+	else
+		z = 0
+	end
+	local md = Vector3.new(x, 0, z)
+	if md.Magnitude <= 0 then
+		md = Vector3.new(0, 0, findZDirection())
+	end
+	return md
+end
+
+local function getPosInXTimeFromVel(initialPos, initialVelocity, gravity, time)
+    local position = initialPos + initialVelocity * time + 0.5 * gravity * time * time
+    return position
+end
+
+local function CalculateLanding(power, direction)
+    local origin = Player.Character.Head.Position + direction * 5
+    local velocity = power * direction
+    local t = (velocity.Y / 28) * 2
+    return origin + Vector3.new(velocity.X * t, 0, velocity.Z * t), t
+end
+
+local function CalculateVelocity(from, to, time)
+    from = from or Vector3.new(0, 0, 0)
+    to = to or Vector3.new(0, 0, 0)
+    time = time or 1 
+
+    local g = Vector3.new(0, -28, 0)
+
+    if time == 0 then
+        time = 1  
+    end
+
+    local v0 = (to - from - 0.775 * g * time * time) / time
+    local dir = ((from + v0) - from).Unit
+
+    if dir.Y == 0 then
+        dir = Vector3.new(0, 1, 0)  
+    end
+
+    local power = v0.Y / dir.Y
+    return v0, dir, math.clamp(math.round(power), 50, 95)
+end
+
+
+local function FindTarget()
+    local player = game:GetService("Players").LocalPlayer
+    local mouse = player:GetMouse()
+    local cc = workspace.CurrentCamera
+    local players = game:GetService("Players") 
+
+    local nearestCharacter = nil
+    local nearestDistance = math.huge
+
+    local searchParts = { workspace }
+    if workspace:FindFirstChild("npcwr") then
+        table.insert(searchParts, workspace.npcwr.a)
+        table.insert(searchParts, workspace.npcwr.b)
+    end
+
+    for _, otherPlayer in pairs(players:GetPlayers()) do
+        if otherPlayer ~= player and otherPlayer.Team == player.Team then 
+            local character = otherPlayer.Character
+            if character and character:FindFirstChild("Humanoid") and character:FindFirstChild("HumanoidRootPart") then
+                local screenpoint, onscreen = cc:WorldToViewportPoint(character.HumanoidRootPart.Position)
+                local mousePos = game:GetService("UserInputService"):GetMouseLocation()
+                local distance = (Vector2.new(mousePos.X, mousePos.Y) - Vector2.new(screenpoint.X, screenpoint.Y)).magnitude
+
+                if distance < nearestDistance then
+                    nearestDistance = distance
+                    nearestCharacter = character
+                end
+            end
+        end
+    end
+
+    for _, part in pairs(searchParts) do
+        for _, child in pairs(part:GetChildren()) do
+            if child:FindFirstChildWhichIsA("Humanoid") and child:FindFirstChild("HumanoidRootPart") then
+                if child ~= player.Character then
+                    local screenpoint, onscreen = cc:WorldToViewportPoint(child.HumanoidRootPart.Position)
+                    local mousePos = game:GetService("UserInputService"):GetMouseLocation()
+                    local distance = (Vector2.new(mousePos.X, mousePos.Y) - Vector2.new(screenpoint.X, screenpoint.Y)).magnitude
+
+                    if distance < nearestDistance then
+                        nearestDistance = distance
+                        nearestCharacter = child
+                    end
+                end
+            end
+        end
+    end
+
+    return nearestCharacter
+end
+
+
+
+
+
+local inputFuncs = {
+    [Enum.KeyCode.E] = function()
+    end,
+}
+
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessedEvent)
+    if input.KeyCode == Enum.KeyCode.T and not gameProcessedEvent then
+        local character = Player.Character
+        if character then
+            local football = character:FindFirstChildOfClass("Tool")
+            if football then
+                local handle = football:FindFirstChild("Handle")
+                if handle then
+                    local remoteEvent = handle:FindFirstChildOfClass("RemoteEvent")
+                    if remoteEvent then
+                        local ThrowAnimation = character.Humanoid:LoadAnimation(game:GetService("ReplicatedStorage").Animations.Throw)
+                        ThrowAnimation.Name = "Throw"
+                        ThrowAnimation:Play()
+
+                        remoteEvent:FireServer("Clicked", Player.Character.Head.Position, Player.Character.Head.Position + data.Direction * 10000, (game.PlaceId == 8206123457 and data.Power) or 95, data.Power)
+                    else
+                        warn("RemoteEvent not found in Handle")
+                    end
+                else
+                    warn("Handle not found in Football tool")
+                end
+            else
+                warn("Football tool not found in character")
+            end
+        else
+            warn("Character not found for LocalPlayer")
+        end
+    end
+
+    if inputFuncs[input.KeyCode] then
+        inputFuncs[input.KeyCode]()
+    end
+end)
+
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if not gameProcessedEvent and Player.PlayerGui:FindFirstChild("BallGui") then
+        if input.KeyCode == Enum.KeyCode.Q then
+            locked = not locked
+        elseif input.KeyCode == Enum.KeyCode.Z then
+            passType = passTypeSwitch[passType]
+        end
+    end
+end)
+
+local function BeamProjectile(g, v0, x0, t1)
+    local c = 0.5 * 0.5 * 0.5
+    local p3 = 0.5 * g * t1 * t1 + v0 * t1 + x0
+    local p2 = p3 - (g * t1 * t1 + v0 * t1) / 3
+    local p1 = (c * g * t1 * t1 + 0.5 * v0 * t1 + x0 - c * (x0 + p3)) / (3 * c) - p2
+
+    local curve0 = (p1 - x0).Magnitude
+    local curve1 = (p2 - p3).Magnitude
+
+    local b = (x0 - p3).Unit
+    local r1 = (p1 - x0).Unit
+    local u1 = r1:Cross(b).Unit
+    local r2 = (p2 - p3).Unit
+    local u2 = r2:Cross(b).Unit
+    b = u1:Cross(r1).Unit
+
+    local cf1 = CFrame.new(
+        x0.x, x0.y, x0.z,
+        r1.x, u1.x, b.x,
+        r1.y, u1.y, b.y,
+        r1.z, u1.z, b.z
+    )
+
+    local cf2 = CFrame.new(
+        p3.x, p3.y, p3.z,
+        r2.x, u2.x, b.x,
+        r2.y, u2.y, b.y,
+        r2.z, u2.z, b.z
+    )
+
+    return curve0, -curve1, cf1, cf2
+end
+
+Gui.Enabled = false
+ 
+if syn and syn.protect_gui then
+    syn.protect_gui(Gui)
+end
+ 
+Gui.Parent = (gethui and gethui()) or game:GetService("CoreGui"):FindFirstChild("RobloxGui")
+
+
+task.spawn(function()
+    while true do
+        task.wait()
+        local success, err = pcall(function()
+            target = locked and target or FindTarget()
+
+            highlight.OutlineColor = locked and Color3.fromRGB(24, 34, 54) or Color3.fromRGB(121, 110, 202)
+            highlight.FillColor = locked and Color3.fromRGB(121, 110, 202) or Color3.fromRGB(24, 34, 54)
+
+
+            if target and getgenv().qbaimbotenabled and Player.PlayerGui:FindFirstChild("BallGui") and Player.Character:FindFirstChild("Head") and target:FindFirstChild("HumanoidRootPart") then
+                Gui.Enabled = true
+                Beam.Enabled = getgenv().showArcTracer
+                local moveDirection = isPlayer and Player.Character.Humanoid.MoveDirection or (Player.Character.Humanoid.WalkToPoint - Player.Character.HumanoidRootPart.Position).Unit
+                local leadDistance = 5
+                local estimatedPosition = target.Head.Position + (moveDirection * leadDistance) + Vector3.new(16, 0, 0)
+                local heightFactor = 0.22
+    
+                power, natpwr = findPower(target)
+                local direction = Vector3.new(0, 0, -6)
+                local moveDirection = getMoveDirection(target.Humanoid)
+                local distance = (target.Head.Position - Player.Character.Head.Position).Magnitude
+                
+                if getgenv().autoAngle then
+                    if passType == "Bullet" then
+                        moveDirection = straightenMoveDirection(moveDirection)
+                        estimatedPosition = target.Head.Position + (moveDirection * leadDistance) + Vector3.new(0, -15, -6)
+                        heightFactor = 0.01
+                    end
+                    
+                    at = target.Head.Position + (moveDirection * power + Vector3.new(0, (distance + (power / 2)), 0))
+                else
+                    local estimated = distance / 95
+                    power = 95
+                    at = target.Head.Position + (moveDirection * 25 * estimated) + Vector3.new(0, (distance / 125 * 15), 0)
+                end
+    
+                if getgenv().BeamMode then
+                    if passType == "Jump" then
+                        estimatedPosition = target.Head.Position + (moveDirection * leadDistance) + Vector3.new(0, -6, 2)
+                        heightFactor = 0.1
+    
+                    end
+                end
+    
+                if getgenv().autoAngle then
+                    if passType == "Jump" then
+                        estimatedPosition = target.Head.Position + (moveDirection * leadDistance) + Vector3.new(0, -3, 2)
+                        heightFactor = 0.12
+                    end
+                end
+    
+                if getgenv().BeamMode then
+                    if passType == "Dime" then
+                        estimatedPosition = target.Head.Position + (moveDirection * leadDistance) + Vector3.new(0, -3.5, 2)
+                        heightFactor = 0.125
+    
+                    end
+                end
+    
+                if getgenv().autoAngle then
+                    if passType == "Dime" then
+                        estimatedPosition = target.Head.Position + (moveDirection * leadDistance) + Vector3.new(0, 0, 2)
+                        heightFactor = 0.15
+                    end
+                end
+
+                if getgenv().BeamMode then
+                    if passType == "Mag" then
+                        estimatedPosition = target.Head.Position + (moveDirection * leadDistance) + Vector3.new(0, -2, 0)
+                        heightFactor = 0.135
+    
+                    end
+                end
+    
+                if getgenv().autoAngle then
+                    if passType == "Mag" then
+                        estimatedPosition = target.Head.Position + (moveDirection * leadDistance) + Vector3.new(0, 1.5, -4)
+                        heightFactor = 0.17
+                    end
+                end
+    
+                local distance = (Player.Character.Head.Position - estimatedPosition).Magnitude
+                local t = CalculateTimeToPeak(Player.Character.Head.Position, estimatedPosition, data.Angle, moveDirection.Magnitude <= 0)
+                            
+                local vel, direction, power = CalculateVelocity(Player.Character.Head.Position, estimatedPosition, t)
+    
+                local degrees = nil
+    
+                if getgenv().autoAngle then
+                    local distance = (Player.Character.Head.Position - estimatedPosition).Magnitude
+                    data.Angle = (((Player.Character.Humanoid.FloorMaterial == Enum.Material.Air and distance * 1.1 or distance) / 8) ^ 1.1)
+                    degrees = data.Angle
+                end
+    
+                if getgenv().BeamMode then
+                    local distance = (Player.Character.Head.Position - estimatedPosition).Magnitude
+                    data.Angle = (((Player.Character.Humanoid.FloorMaterial == Enum.Material.Air and distance * 1.1 or distance) / 8) ^ 1.01)
+                    degrees = data.Angle
+                end
+    
+                local landing, airtime = CalculateLanding(power, direction)
+                local c0, c1, cf1, cf2 = BeamProjectile(Vector3.new(0, -28, 0), power * direction, Player.Character.Head.Position + (direction * 5), airtime)
+    
+                local isInterceptable = false
+    
+                part1.Position = getPosInXTimeFromVel(Player.Character.Head.Position + direction * 5, power * direction, Vector3.new(0, -28, 0), airtime)
+
+
+      
+
+
+                Beam.CurveSize0 = math.min(c0, 200)
+                Beam.CurveSize1 = math.min(c1, 200)
+
+                Attachment0.CFrame = cf1
+                Attachment1.CFrame = cf2
+
+                data.Direction = direction
+                data.Power = power
+
+                highlight.Parent = target
+                highlight.Enabled = true
+
+                if not getgenv().autoAngle then
+                    Gui.Main.PowerCard.Val.Text = power
+                    Gui.Main.PlayerCard.Val.Text = target.Name
+                    Gui.Main.AngleCard.Val.Text = data.Angle
+                    Gui.Main.ModeCard.Val.Text = passType
+                else
+                    Gui.Main.PowerCard.Val.Text = tostring(power)
+                    Gui.Main.PlayerCard.Val.Text = target.Name
+                    Gui.Main.AngleCard.Val.Text = degrees
+                    Gui.Main.ModeCard.Val.Text = passType
+                end
+            else
+                    Gui.Enabled = false
+                    highlight.Parent = nil
+                end
+            end)
+
+        if not success then
+            warn("Error in aimbot loop: " .. tostring(err))
+        end
+    end
+end)
+
+
+local AutoFarmSettings = Tabs.Main:AddLeftGroupbox("Aimbot Configurations")
+
+
+AutoFarmSettings:AddToggle('', {
+    Text = 'Regular Aimbot',
+    Default = false,
+    Tooltip = 'Enable',
+    Callback = function(Value)
+    getgenv().qbaimbotenabled = Value
+end})
+
+AutoFarmSettings:AddToggle('', {
+    Text = 'Auto Angle Aimbot',
+    Default = false,
+    Tooltip = 'Enable',
+    Callback = function(Value)
+        getgenv().autoAngle = Value
+    end
+})
+
+AutoFarmSettings:AddToggle('', {
+    Text = 'Beam Mode Aimbot',
+    Default = false,
+    Tooltip = 'Enable',
+    Callback = function(Value)
+        getgenv().BeamMode = Value
+    end
+})
+
+local AutoFarmSettings = Tabs.Main:AddRightGroupbox("Catching")
+
+local shadow = {
+    Catching = {
+        Magnets = false,
+        CustomizableRadius = 15,
+        CustomizableDelay = 0.02,
+    },
+    Player = {
+        TeleportWalkEnabled = false,
+        TeleportDistance = 0,
+        MaxTeleportDistance = 2, 
+        TeleportDelay = 0,
+      
+    },
+    Physics = {
+        AntiBlock = false,
+    },
+}
+    
+
+function findClosestFootball()
+    local minDistance = math.huge
+    local closestFootball = nil
+    local playerCharacter = LocalPlayer.Character
+
+    for _, item in next, workspace:GetChildren() do
+        if item.Name ~= "Football" or not item:IsA("BasePart") then
+            continue
+        end
+        local rootPart = playerCharacter:FindFirstChild("HumanoidRootPart")
+        if not rootPart then
+            continue
+        end
+        local currentDistance = (item.Position - rootPart.Position).Magnitude
+        if currentDistance < minDistance then
+            closestFootball = item
+            minDistance = currentDistance
+        end
+    end
+    return closestFootball
+end
+
+function getNearestPart(fromPart, targetParts)
+    local minDistance = math.huge
+    local nearestPart = nil
+
+    for _, target in next, targetParts do
+        local currentDistance = (fromPart.Position - target.Position).Magnitude
+        if currentDistance < minDistance then
+            nearestPart = target
+            minDistance = currentDistance
+        end
+    end
+    return nearestPart
+end
+
+local function calculateDistanceFactor(distance, radius)
+    return math.clamp(1 - (distance / radius), 0, 1)
+end
+
+local part = Instance.new("Part")
+part.Material = Enum.Material.ForceField
+part.Transparency = 0.5
+part.Anchored = true
+part.CanCollide = false
+part.CastShadow = false
+
+local function solarafiretouchinterest(catchPart, football)
+    if not football or not shadow.Catching.Magnets then return end
+
+    local distanceToFootball = (football.Position - catchPart.Position).Magnitude
+    local distanceFactor = calculateDistanceFactor(distanceToFootball, shadow.Catching.CustomizableRadius)
+
+    local targetCFrame = catchPart.CFrame * CFrame.new(0, 0, -distanceFactor * 0.5)
+    football.CFrame = targetCFrame
+end
+
+AutoFarmSettings:AddToggle('', {
+    Text = 'Mags',
+    Default = false,
+    Tooltip = 'Enable',
+    Callback = function(state)
+        shadow.Catching.Magnets = state
+    end
+})
+
+AutoFarmSettings:AddSlider('Range', {
+    Text = 'Range',
+    Default = 15,
+    Min = 0,
+    Max = 45,
+    Rounding = 2,
+    Compact = false,
+    Callback = function(value)
+        shadow.Catching.CustomizableRadius = value
+    end,
+})
+
+AutoFarmSettings:AddSlider('Delay', {
+    Text = 'Delay',
+    Default = 0,
+    Min = 0,
+    Max = 1,
+    Rounding = 2,
+    Compact = false,
+    Callback = function(value)
+        shadow.Catching.CustomizableDelay = value
+    end,
+})
+
+AutoFarmSettings:AddToggle('', {
+    Text = 'Show Hitbox',
+    Default = false,
+    Tooltip = 'Enable',
+    Callback = function(state)
+        shadow.Catching.ShowMagHitbox = state
+    end
+})
+
+task.spawn(function()
+    while task.wait(0.05) do
+        if shadow.Catching.Magnets then
+            local ball = findClosestFootball()
+            if not ball then
+                part.Parent = nil
+                continue
+            end
+
+            local catchRight = LocalPlayer.Character:WaitForChild("CatchRight")
+            local catchLeft = LocalPlayer.Character:WaitForChild("CatchLeft")
+            local catchPart = getNearestPart(ball, {catchRight, catchLeft})
+
+            part.Position = ball.Position
+            part.Size = Vector3.new(shadow.Catching.CustomizableRadius, shadow.Catching.CustomizableRadius, shadow.Catching.CustomizableRadius)
+            part.Parent = shadow.Catching.ShowMagHitbox and workspace or nil
+            part.Color = Color3.fromRGB(71, 188, 255)
+
+            if catchPart and (catchPart.Position - ball.Position).Magnitude < shadow.Catching.CustomizableRadius then
+                solarafiretouchinterest(catchRight, ball)
+                solarafiretouchinterest(catchLeft, ball)
+            end
+        end
+    end
+end)
+
+local Player = game:GetService("Players").LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+local speedValue = 0
+local rangeValue = 25
+local pullEnabled = false
+local minFootballHeight = 5
+local savedPosition = nil
+
+local function getClosestFootball()
+    local closestFootball = nil
+    local minDistance = math.huge
+    for _, obj in pairs(workspace:GetChildren()) do
+        if obj:IsA("BasePart") and obj.Name == "Football" then
+            local distance = (obj.Position - HumanoidRootPart.Position).Magnitude
+            if distance < minDistance then
+                minDistance = distance
+                closestFootball = obj
+            end
+        end
+    end
+    return closestFootball, minDistance
+end
+
+local function isFootballInHandle()
+    local handle = Character:FindFirstChild("Handle")
+    if handle then
+        for _, obj in pairs(handle:GetChildren()) do
+            if obj:IsA("BasePart") and obj.Name == "Football" then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+local function moveToFootball()
+    local closestFootball, distance = getClosestFootball()
+    
+    if closestFootball and distance <= rangeValue and pullEnabled then
+        if closestFootball.Position.Y > minFootballHeight then
+            local direction = (closestFootball.Position - HumanoidRootPart.Position).Unit
+            local speedFactor = math.clamp(speedValue / 50, 0.1, 1)
+
+            if not savedPosition then
+                savedPosition = HumanoidRootPart.Position
+            end
+
+            local targetPosition = closestFootball.Position - direction * 2
+            HumanoidRootPart.CFrame = HumanoidRootPart.CFrame:Lerp(CFrame.new(targetPosition), 0.2 * speedFactor)
+        end
+    end
+
+    if isFootballInHandle() and savedPosition then
+        HumanoidRootPart.CFrame = CFrame.new(savedPosition)
+        savedPosition = nil
+        pullEnabled = false
+    end
+end
+
+local AutoFarmSettings = Tabs.Main:AddLeftGroupbox("Vector")
+
+AutoFarmSettings:AddToggle('', {
+    Text = 'Pull Vector',
+    Default = false,
+    Tooltip = 'Enable',
+    Callback = function(enabled)
+        pullEnabled = enabled
+    end
+})
+
+AutoFarmSettings:AddSlider('Range', {
+    Text = 'Range',
+    Default = 25,
+    Min = 0,
+    Max = 50,
+    Rounding = 2,
+    Compact = false,
+    Callback = function(value)
+        rangeValue = value
+    end
+})
+
+AutoFarmSettings:AddSlider('Speed', {
+    Text = 'Speed',
+    Default = 0,
+    Min = 0,
+    Max = 50,
+    Rounding = 2,
+    Compact = false,
+    Callback = function(value)
+        speedValue = value
+    end
+})
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    if pullEnabled then
+        moveToFootball()
+    end
+end)
+
+local AutoFarmSettings = Tabs.Main:AddRightGroupbox("Q tp figurations")
+
+
+AutoFarmSettings:AddToggle('', {
+    Text = 'Quick TP',
+    Default = false,
+    Tooltip = 'Enable',
+    Callback = function(value)
+        shadow.Player.TeleportWalkEnabled = value
+        shadow.Player.TeleportDistance = value and shadow.Player.TeleportDistance or 0
+    end
+})
+
+AutoFarmSettings:AddSlider('Range', {
+    Text = 'Studs',
+    Default = 0,
+    Min = 0,
+    Max = 5,
+    Rounding = 2,
+    Compact = false,
+    Callback = function(distance)
+        shadow.Player.TeleportDistance = distance
+    end
+})
+
+local teleporting = false
+local input = game:GetService("UserInputService")
+local runService = game:GetService("RunService")
+local camera = workspace.CurrentCamera
+
+runService.RenderStepped:Connect(function()
+    if not shadow.Player.TeleportWalkEnabled or teleporting or shadow.Player.TeleportDistance <= 0 then return end
+
+    local direction = (input:IsKeyDown(Enum.KeyCode.W) and camera.CFrame.LookVector or Vector3.new()) +
+                      (input:IsKeyDown(Enum.KeyCode.S) and -camera.CFrame.LookVector or Vector3.new()) +
+                      (input:IsKeyDown(Enum.KeyCode.A) and -camera.CFrame.RightVector or Vector3.new()) +
+                      (input:IsKeyDown(Enum.KeyCode.D) and camera.CFrame.RightVector or Vector3.new())
+
+    if direction.Magnitude > 0 then
+        teleporting = true
+        HumanoidRootPart.CFrame = HumanoidRootPart.CFrame + direction.Unit * shadow.Player.TeleportDistance
+        task.wait(shadow.Player.TeleportDelay)
+        teleporting = false
+    end
+end)
+
+
+local isRunning = false
+local accuracy = 0.04
+local power = 95.61
+local minAccuracy = 0.04
+local maxAccuracy = 1
+local eventCheckInterval = 0.2
+local isBallPresent = false
+local remoteEvent = nil
+
+local function getRemoteEvent()
+    local kickerBall = workspace:FindFirstChild("KickerBall")
+    if kickerBall and kickerBall:FindFirstChild("RemoteEvent") then
+        return kickerBall.RemoteEvent
+    end
+    return nil
+end
+
+local function calculateDynamicAccuracy(baseAccuracy, adjustFactor)
+    return math.clamp(baseAccuracy * adjustFactor, minAccuracy, maxAccuracy)
+end
+
+local function fireRemoteEvent()
+    if isBallPresent and remoteEvent then
+        local args = {
+            [1] = "KickData",
+            [2] = 46,
+            [3] = power,
+            [4] = accuracy,
+            [5] = false
+        }
+        remoteEvent:FireServer(unpack(args))
+    end
+end
+
+local function executeLoop()
+    while isRunning do
+        remoteEvent = getRemoteEvent()
+        isBallPresent = remoteEvent ~= nil
+
+        if isBallPresent then
+            fireRemoteEvent()
+        end
+
+        wait(eventCheckInterval)
+    end
+end
+local AutoFarmSettings = Tabs.Main:AddLeftGroupbox("Kicker Shit")
+
+AutoFarmSettings:AddToggle('', {
+    Text = 'Auto-kick',
+    Default = false,
+    Tooltip = 'Enable auto-kicking mechanism',
+    Callback = function(v)
+        isRunning = v
+        if v then
+            task.spawn(executeLoop)
+        end
+    end
+})
+
+AutoFarmSettings:AddSlider('Accuracy', {
+    Text = 'Set Accuracy',
+    Default = 0,
+    Min = 0,
+    Max = 98,
+    Rounding = 2,
+    Compact = false,
+    Callback = function(value)
+        local scale = ((100 - value) / 99)
+        accuracy = calculateDynamicAccuracy(minAccuracy, scale)
+    end
+})
+
+local checkingTool = false
+local armLength = 20
+local visibility = 0.999
+local AutoFarmSettings = Tabs.Main:AddRightGroupbox("Random Stuff")
+
+AutoFarmSettings:AddToggle('', {
+    Text = 'Increase Hand',
+    Default = false,
+    Tooltip = 'Enable or disable arm size increase',
+    Callback = function(enabled)
+        checkingTool = enabled
+        local leftArm = LocalPlayer.Character['Left Arm']
+        local rightArm = LocalPlayer.Character['Right Arm']
+
+        if enabled then
+            leftArm.Size = Vector3.new(1, armLength, 1)
+            rightArm.Size = Vector3.new(1, armLength, 1)
+            leftArm.Transparency = visibility
+            rightArm.Transparency = visibility
+        else
+            leftArm.Size = Vector3.new(1, 2, 1)
+            rightArm.Size = Vector3.new(1, 2, 1)
+            leftArm.Transparency = 0
+            rightArm.Transparency = 0
+        end
+    end
+})
+
+AutoFarmSettings:AddSlider('ArmLength', {
+    Text = 'Set Arm Length',
+    Default = 20,
+    Min = 0,
+    Max = 20,
+    Rounding = 2,
+    Compact = false,
+    Callback = function(value)
+        armLength = value
+        if checkingTool then
+            local leftArm = LocalPlayer.Character['Left Arm']
+            local rightArm = LocalPlayer.Character['Right Arm']
+            leftArm.Size = Vector3.new(1, armLength, 1)
+            rightArm.Size = Vector3.new(1, armLength, 1)
+        end
+    end
+})
+
+
+AutoFarmSettings:AddToggle('', {
+    Text = 'Anti Block S',
+    Default = false,
+    Tooltip = 'Enable or disable arm size increase',
+    Callback = function(isEnabled)
+        antiblockon = isEnabled  
+        if not isEnabled then
+            RestoreFFMover()  
+        end
+    end,
+})
+
+local playerCharacter = Character or nil
+local torsoPart = playerCharacter and playerCharacter:FindFirstChild("Torso")
+local previousFFmover = nil 
+
+local function HandleBlockEvent()
+    if antiblockon then
+        if torsoPart then
+            local currentFFmover = torsoPart:FindFirstChild("FFmover")
+            if currentFFmover then
+                previousFFmover = currentFFmover:Clone() 
+                currentFFmover:Destroy() 
+            end
+        end
+    end
+end
+
+local function RestoreFFMover()
+    if torsoPart and previousFFmover then
+        previousFFmover.Parent = torsoPart  
+        previousFFmover.Name = "FFmover" 
+        previousFFmover = nil 
+    end
+end
+
+task.spawn(function()
+    while task.wait(0.1) do 
+        HandleBlockEvent()
+    end
+end)
+
+local MenuGroup = Tabs['UI Settings']:AddLeftGroupbox('Menu')
+
+-- I set NoUI so it does not show up in the keybinds menu
+MenuGroup:AddButton('Unload', function() Library:Unload() end)
+MenuGroup:AddLabel('Menu bind'):AddKeyPicker('MenuKeybind', { Default = 'End', NoUI = true, Text = 'Menu keybind' })
+
+Library.ToggleKeybind = Options.MenuKeybind -- Allows you to have a custom keybind for the menu
+
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
